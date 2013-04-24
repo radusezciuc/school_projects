@@ -1,0 +1,25 @@
+Sezciuc Radu Cristian
+grupa 321CB
+
+Tema 3 PA
+
+
+	1.(Scurta descriere a continutului arhivei si modului de compilare si rulare) 
+	Arhiva trimisa de mine contine urmatoarele fisiere: Main.java (codul sursa pentru mainul meu), Graf.java (implementarea grafului meu si a metodelor de calcul necesare pentru calculul taieturii minime), Muchii.java(simpla clasa care contine implementarea unei muchii) si Formule.java(clasa unde am implementat principalele formule ce calculeaza capacitatile muchiilor). Dupa cum se vede, am rezolvat aceasta tema in Java, cu ajutorul compilatorului Eclipse.Tin sa precizez ca am lucrat sub sistemul de operare Windows 7. In folderul proiectului am situat si fiserele necesare pentru citire/afisare a programului. 
+
+	2.(Introducere in problema)
+	Problema presupune segmentarea unei imaginii dupa doua masti date si aflate in fisierele mask_fg si mask_bg. Dupa calcul, se obtine o noua imagine cu fiecare pixel marcat ca fiind aflat in foregroundul imaginii, sau backgroundul ei. Parametrii acestei noi imagini vor fi scrisi in fisierul segment.pgm.
+
+	3.( Descriere a algoritmului folosit si a structurilor de date)
+	Pentru a efectua segmentarea unei imagini, m-am folosit de 3 tablouri unidimensionale(imagine, fore si back) in care am salvat valorile culorilor tuturor pixelilor, si valorile mastilor foregorund/background pentru fiecare pixel. Pe acestea le-am citit din cele 3 fisiere(imagine.pgm, mask_fg.pgm si mask_bg.pgm), folosindu-ma de fiecare data de Streamurile de Input/Output FileReader si BufferedReader. Apeland metoda readLine(), am citit linie cu linie aceste fisiere. Prima linie am ignorat-o, din a doua am pastrat numarul de linii si coloane de pixeli din structura imaginii, pe a treia am ignorat-o(deoarece maxval era intotdeauna 255), iar in urmatoarele linii pana la final erau valorile specifice fiecarui pixel. 
+	
+	Apoi, din "parametri.txt" am citit cei doi parametri(lambda si treshold) necesari formulelor capacitatilor muchiilor. Apoi, am decis sa formez un graf ce are ca noduri pixelii imaginii, si alte doua noduri suplimentare ce vor reprezenta sursa si drena grafului.
+	
+	Pentru a forma graful, am creat muchii intre fiecare nod-pixel si toate nodurile vecine din matricea-imagine. Astfel ca, pixelul de sus va fi gasit in vector cu ajutorul indicelui i-nrcoloane, pixelul de jos va fi gasit cu ajutorul indicelui i+nrcoloane, cel din stanga cu i-1 si cel din dreapta cu i+1.Trebuie sa mentionez ca aceste noi muchii create au capacitatea egala cu functia fp din documentatia temei. Dupa crearea legaturilor in acest fel pentru fiecare pixel in parte, este necesara si crearea muchiilor intre sursa si restul nodurilor, si intre drena si restul nodurilor. Capacitatile noilor muchii rezolvate vor fi egale cu functiile fu rond (in functie de indicele pixelui si variabila x(0 daca acela este in background si 1 daca acela este in foreground). 
+	
+	Am format in acest fel graful deoarece aplicarea unei taieturi minime pe acesta este echivalent cu aflarea energiei minime a configuratiei. Astfel incat, in clasa Graf.java, pe langa campurile necesare size(numarul de noduri prezente :nrcol*nrlin + 2, si anume multimea totala de pixeli din matricea imagine + sursa si drena), si edges (un HashMap in care salvez muchiile grafului. Am ales implementarea grafului printr-un vector de vectori, HashMap, si nu prin matrice de adiacenta din cauza necesitatii salvarii de memorie RAM. Matricea de adiacenta aloca spatiu pentru toate muchiile posibile din graf, pe cand HashMapul aloca memorie doar pentru muchiile existente in mod real si atat), mai sunt prezente metodele de addedges( care imi adauga atunci cand doresc o noua muchie in graf), muchie( care imi returneaza muchia caracteristica nodurilor date ca parametru, in vederea aflarii capacitatii acesteia). De asemenea, mai e prezent constructorul grafului ce imi aloca memorie pentru structurile clasei, o metoda exmuchie, ce imi testeaza existenta unei anumite muchii, implementarea unui Breadth First Search simplu, a functiilor Saturate_Path, maximum_flow si min_cut.
+
+	Folosesc BFS pentru a afla o cale intre sursa si drena. Apoi, maximum_flow (si anume energia minima a configuratiei) va fi calculat dupa saturarea cailor aflate de BFS. Dupa ce avem un graf saturat, taietura minima se afla salvandu-se intr-un tabou unidimensional de tip boolean vectorul ce contine starea fiecarui pixel (true pentru background, false pentru foreground). In cele din urma, vectorul final se afiseaza in segment.pgm (in loc de true 0, si in loc de false 255).
+
+	4.(Testare si verificare)
+	Tin sa spun ca pentru efectuarea unuia dintre cele mai grele teste(testul 14), obtin rezultatele corecte in limita de timp, si de asemenea in memoria utilizata. Pentru o limita de memorie de 64 de MB, eu utilizez doar 6MB. Desigur, apelez Garbage Collector pe parcurs manual, deoarece sistemul nu il foloseste la timp. Ma incadrez in limitele mentionate pentru toate testele(ca si timp in 3-4 secunde sau mai putin), mai putin 15 si 16, unde obtin totusi energia si taietura minima corecta(dar intr-o marja mult mai mare de timp).

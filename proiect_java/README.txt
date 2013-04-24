@@ -1,0 +1,9 @@
+Sezciuc Radu Cristian 321CB
+
+
+Pentru efectuarea temei 1, am folosit 3 mari functii implementate in cadrul a doua clase. Prima clasa, intitulata Dictionar, este o clasa ajutatoare ce retine caracteristicile fiecarui cuvant din dictionar: cuvantul propriu zis, frecventa de aparitie, si distanta de editare fata de cuvantul corect cel mai apropiat. Prima 
+functie implementata este chiar functia ce calculeaza distanta de editare fata de un cuvant, prin metoda Levenshtein( LevenshteinDistance).Aceasta functie se foloseste de alcatuirea unei matrice in casutele careia se afla distantele de editare fata de cele doua cuvinte aflate pe orizontala si verticala. Ea returneaza distanta de editare a cuvintelor intregi, si anume valoarea aflata pe ultima pozitie a matricei: cea de coordonate m(lungimea primului cuvant) si n(lungimea celui de-al doilea cuvant). 
+
+A doua functie se numeste corectarecuvant, si are rolul de a gasi cuvantul potrivit folosindu-se de distanta levenshtein calculata.Ea cauta in intregul dictionar cuvantul ce are distanta Levenshtein cea mai mica. In caz ca sunt mai multe care indeplinesc acest criteriu,se alege cuvantul cu frecventa de aparitie cea mai mare, si apoi cuvantul care este primul dupa ordonarea lexicografica.
+
+Ultima functie, si cea esentiala, este corectaresir care are rolul de a corecta efectiv intregul sir de caractere citit de la tastatura. Acesta alacatuieste o matrice cu toate subsirurile posibile ale sirului(din care am scos anterior toate spatiile), si folosindu-se de programare dinamica insereaza spatii in toate cazurile posibile. Daca sirul alternativ indeplineste conditii mai bune( distanta de editara mai buna, frecventa mai mare, numar de cuvinte mai mic, si pozitie minimala in ordinea lexicografica), atunci el este pus in matrice in locul subsirului original. La final se trimite sirul corect rezultat: ultimul element de pe prima linie a matricei.

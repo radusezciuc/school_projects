@@ -1,0 +1,102 @@
+Calcul paralel folosind MPI
+Responsabili de tema: Radu Ciobanu & Vlad Calina
+Data publicarii: 02.12.2012
+Data ultimei modificari a enuntului: 12.12.2012
+Termenul de predare: 17.12.2012 18.12.2012, ora 23:55
+ 
+
+Cerin?a
+Sa se scrie un program care sa calculeze mul?imile Mandelbrot [1] ?i Julia [2] pentru o func?ie polinomiala complexa de forma f(z)=z2+c si sa le afiseze sub forma de imagini grayscale. Programul va fi scris in C/C++ ?i va fi paralelizat utilizând MPI.
+
+Defini?ii
+1. Mul?imea Mandelbrot 
+Fie familia de polinoame complexe Pc: C?C , definite de Pc(z)=z2+c , cu c un numar complex. Definim multimea Mandelbrot ca fiind multimea punctelor c pentru care secventa 0,Pc(0), Pc(Pc(0)),... nu tinde catre infinit.
+
+M={ c | ? s?R a.i. ? n?N, |Pcn(0)|<s }
+
+Generarea ?i reprezentarea mul?imii Mandelbrot se poate realiza folosind urmatorul algoritm:
+
+foreach c in the complex plane do
+    z ? 0 + 0i
+    step ? 0
+    while |z| < 2 and step < MAX_STEPS do
+        z ? z*z + c
+        step ? step + 1
+    color ? step mod NUM_COLORS
+    plot(c.x,c.y,color)
+
+2. Mul?imi Julia 
+
+Fie f(z): C?C, f(z)=P(z)/Q(z) o func?ie ra?ionala complexa. Mul?imea Julia plina Jf a func?iei este mul?imea punctelor din planul complex care au o orbita marginita în raport cu f.
+
+Jf = { z?C | ? s?R a.i. ? n?N, |f n(z)|<s }
+
+Generarea ?i reprezentarea mul?imii Julia pline pentru o functie f(z)=z2+c se pot realiza folosind urmatorul algoritm: 
+
+foreach z in the complex plane do
+    step ? 0
+    while |z| < 2 and step < MAX_STEPS do
+        z ? z*z + c
+        step ? step + 1
+    color ? step mod NUM_COLORS
+    plot(z.x,z.y,color)
+
+Paralelizare
+Cei doi algoritmi se vor paraleliza folosind MPI, procesele lucrând pe submul?imi de date aproximativ egale. Astfel, un proces master va citi fi?ierul de intrare, dupa care va trimite x_min, x_max, y_min, y_max, rezolu?ia ?i numarul de itera?ii la celelalte procese (se considera deci ca doar master-ul are acces la fi?ier ?i la aceste informa?ii). Mai departe, fiecare proces în parte (inclusiv master-ul) î?i va calcula intervalul din matricea finala de pixeli pe care lucreaza ?i va aplica algoritmul corespunzator asupra acestuia. La final, fiecare proces va trimite master-ului datele calculate, iar master-ul va crea matricea imaginii finale ?i o va scrie în fi?ierul PGM de ie?ire.
+
+Format date de intrare/ie?ire
+Pentru implementarea temei, trebuie sa ave?i un singur executabil care va primi 2 parametri: numele fi?ierului de intrare ?i numele fi?ierului de ie?ire.
+
+
+Fi?ierul de intrare va avea urmatorul format:
+
+prima linie: un întreg care define?te tipul de mul?ime care va fi generata (0 - pentu calculul mul?imii Mandelbrot; 1 - calculul mul?imii Julia)
+a doua linie: 4 numere reale (x_min, x_max, y_min, y_max) separate de spa?ii, care definesc subspa?iul din planul complex pentru care se realizeaza calculul. Intervalele pe care se va lucra sunt [x_min,x_max) si [y_min,y_max).
+a treia linie: un numar real care define?te rezolu?ia (pasul) în cadrul subspa?iului ales
+a patra linie: numarul maxim de itera?ii pentru generarea mul?imilor (MAX_STEPS)
+în cazul în care se realizeaza calcului mul?imii Julia (1 pe prima linie), pe cea de-a cincea linie se vor gasi 2 numere reale ( ?i ) separate de spa?iu, care definesc parametrul complex  al func?iei
+Exemple:
+
+0
+-2.5 1.0 -1.0 1.0
+0.001
+5000
+ 	 Va genera mul?imea Mandelbrot între -2.5 ?i 1.0 pe axa OX, respectiv între -1.0 ?i 1.0 pe axa OY cu o rezolu?ie de 0.001. În cadrul algoritmului se va folosi un numar de maximum 5000 itera?ii.
+1  
+-2.0 2.0 -2.0 2.0
+0.001
+5000
+-0.6 0
+ 	 Va genera mul?imea Julia a functiei  între -2.0 ?i 2.0 pe axa OX, respectiv între -2.0 ?i 2.0 pe axa OY cu o rezolu?ie de 0.001. În cadrul algoritmului se va folosi un numar de maximum 5000 itera?ii.
+Rezultatele programului vor fi scrise în fi?ierul de ie?ire în format PGM “plain” [3]. Imaginea rezultata va avea un numar de 256 de nuan?e de gri (valori intre 0 si 255). Dimensiunile imaginii finale se calculeaza pe baza x_min, x_max, y_min, y_max si rezolu?ie, conform formulelor:
+
+Width=[(x_max-x_min)/resolution]
+Height=[(y_max-y_min)/resolution]
+
+În formulele anterioare [x] reprezinta partea întreaga a lui x (cel mai mare numar întreg mai mic sau egal cu x).
+ 
+ 
+O imagine de tip PGM “plain” are urmatorul format:
+
+   prima linie: numarul magic specific formatului (“P2”)
+   a doua linie: la?imea ?i înal?imea imaginii în pixeli (separate de spa?iu)
+   a treia linie: valoarea maxima de gri (în cazul de fa?a va fi 255, adica NUM_COLORS - 1 din algoritmii prezenta?i în a doua sec?iune)
+   urmatoarele linii: valorile de gri ale pixelilor de pe fiecare linie din imagine, separate prin spa?ii albe.
+Pentru a deschide imagini PGM, pute?i folosi diverse editoare de imagini (de exemplu, Gimp).
+
+Aten?ie! Deoarece în cazul coordonatelor matematice, punctul (0,0) se afla în partea de stânga-jos a axelor ?i axa OY este îndreptata în sus, iar pentru coordonatele ecran, punctul (0,0) se afla în partea de stânga-sus ?i axa OY este îndreptata în jos, în momentul în care salva?i datele în fi?ierul de ie?ire, va trebui sa scrie?i coordonatele Y în ordine inversa, a?a cum pute?i vedea în imaginea de mai jos. Recomandam totusi parcurgerea spatiului complex in ordine directa(de la X_min la X_max si de la Y_min la Y_max) astfel incat sa se evite posibile erori de precizie.
+
+
+Testare
+Temele se vor testa pe cluster pentru diferite valori ale lui N (numarul de procese), a?a ca este recomandat sa va rula?i tema variind N ?i verificând ca ob?ine?i acela?i rezultat pe toate cazurile. Pute?i gasi aiciun set de teste publice ?i output-urile corespunzatoare. Pe lânga aceste teste, vom rula ?i câteva teste private. Pentru verificarea rezultatului vostru cu cele ob?inute de noi, puteti folosi programul imgdiff care se afla în arhiva(imgdiff - 64 biti si imgdiff32 - 32 biti). Deoarece se lucreaza cu valori cu multe zecimale si cu operatii de radical si ridicari la patrat, pot aparea erori de rotunjire în functie de compilatorul folosit. Din aceasta cauza, exista posibilitatea ca output-ul vostru sa difere un pic de rezultatele noastre, însa imgdiff ia în considerare acest lucru când compara doua fisiere PGM (pe care le prime?te ca parametri în linia de comanda).
+
+Tema se va trimite într-o arhiva .zip care pe lânga fi?ierele sursa va trebui sa con?ina urmatoarele 2 fi?iere în radacina arhivei:
+
+Makefile - rularea comenzii make trebuie sa compileze tema ?i sa genereze executabilul
+readme.txt 
+Atentie! pentru a rula folosind programe mpi pe cluster folosind qsub, scriptul de rulare trebuie sa contina comanda module load libraries/openmpi-1.6-gcc-4.4.6 inainte de a folosi mpirun. In caz contrar veti primi un mesaj de eroare de forma: /opt/n1sge6/sge-6.2u5/NCIT-Cluster/spool/quad-wn14/job_scripts/385848: line 1: mpirun: command not found.
+
+Pentru compilare(pe fep):
+
+1. module load libraries/openmpi-1.6-gcc-4.4.6
+2. folositi mpicc/mpic++ in loc de gcc/g++
